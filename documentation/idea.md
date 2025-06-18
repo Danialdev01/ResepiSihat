@@ -20,6 +20,7 @@
 - User can share recipes
 - User can like recipes 
 - User can comment on recipes
+- User can create food ingredient list
 
 <!-- Melalui  AI  -->
 - User can create measurement base on portion / serving
