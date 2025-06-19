@@ -1,0 +1,55 @@
+<mxfile host="65bd71144e">
+    <diagram id="k4Ai0FC05hZyOPEuzvf6" name="Page-1">
+        <mxGraphModel dx="1330" dy="783" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="2" value="Mula" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.start_1;whiteSpace=wrap;" parent="1" vertex="1">
+                    <mxGeometry x="130" y="100" width="100" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="3" value="Daftar pengguna" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="130" y="220" width="100" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="6" value="Pilih organisasi atau persendirian" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="130" y="330" width="100" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="7" value="Lihat recipe orang" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="130" y="420" width="100" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="8" value="Like recipe orang" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+                    <mxGeometry x="280" y="420" width="100" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="9" value="Comment recipe" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+                    <mxGeometry x="420" y="420" width="100" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="10" value="Share recipe" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+                    <mxGeometry x="560" y="420" width="100" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="11" value="Buat recipe" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+                    <mxGeometry x="130" y="515" width="100" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="12" value="Ambil gambar recipe" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+                    <mxGeometry x="280" y="515" width="100" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="13" value="Buat tutorial recipe" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+                    <mxGeometry x="420" y="515" width="100" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="14" value="Buat quantiti recipe" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+                    <mxGeometry x="560" y="515" width="100" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="15" value="AI" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+                    <mxGeometry x="130" y="610" width="100" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="16" value="Tanya recipe cadangan" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+                    <mxGeometry x="280" y="610" width="100" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="17" value="Cadangkan recipe diet" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+                    <mxGeometry x="420" y="610" width="100" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="18" value="Beritahu kelebihan kesihatan recipe" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+                    <mxGeometry x="560" y="610" width="100" height="70" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

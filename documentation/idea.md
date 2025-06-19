@@ -37,8 +37,6 @@
             - orang 
 
 
-
-
 -----------------------------------------------------------------------------
 ## Name 
 - 
@@ -58,3 +56,7 @@
 
 - system recommend recipe 
 - bagitahu calori 
+
+
+Timeline 
+- bulan 8 - 9 prototype
