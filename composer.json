@@ -1,0 +1,9 @@
+{
+  "require": {
+    "cloudinary/cloudinary_php": "^2",
+    "google/apiclient": "^2.18",
+    "php-ffmpeg/php-ffmpeg": "^1.3",
+    "google/auth": "^1.47",
+    "minishlink/web-push": "^9.0"
+  }
+}

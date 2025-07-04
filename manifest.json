@@ -1,0 +1,25 @@
+{
+  "short_name": "ResipiSihat",
+  "name": "Resipi Sihat",
+  "start_url": "/?source=pwa",
+  "background_color": "#0d1017",
+  "display": "fullscreen",
+  "scope": "/",
+  "theme_color": "#0d1017",
+  "id": "resipiSihat",
+  "description": "Resipi Sihat",
+  "lang": "ms",
+  "orientation": "portrait",
+  "categories": [
+    "cooking"
+  ],
+  "share_target": {
+    "method": "GET",
+    "action": "backend/resource.php",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  }
+}
