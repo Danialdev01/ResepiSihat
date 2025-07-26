@@ -13,7 +13,7 @@
     $dbname = $env['DBNAME'];
     $secret_key = $env['SECRET_KEY'];
     $domain = $env['DOMAIN'];
-    $token_name = "ResipiSihat";
+    $token_name = "ResepiSihat";
 
     // Google SSO
     $clientId = $env['GOOGLE_CLIENT_ID'];

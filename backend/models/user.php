@@ -105,9 +105,9 @@ function verifySessionUser($token_name, $secret_key, $connect){
             return encodeObj("400", "Password not correct $password_user", "error");
         }
 
-        if($user['password_user'] != NULL){
+        if($user['hash_password_user'] != NULL){
 
-            if(password_verify($password_user, $user['password_user'])){
+            if(password_verify($password_user, $user['hash_password_user'])){
     
                 $status = encodeObj("200", "Loggin Success", "success");
                 
@@ -163,7 +163,6 @@ function createUser($name_user, $email_user, $password_user, $type, $confirm_pas
 
         $email_user = validateInput($email_user);
         $name_user = validateInput($name_user);
-        $created_date_user = date("Y-m-d");
         $password_user = validateInput($password_user);
         $confirm_password_user = validateInput($confirm_password_user);
 
@@ -172,40 +171,31 @@ function createUser($name_user, $email_user, $password_user, $type, $confirm_pas
         // check if user exit
         if($user['exists'] != null){
             return encodeObj("400", "User Exits", "error");
+            exit;
         }
 
         // check if password confirm correct
         if($password_user != $confirm_password_user){
-    
             return encodeObj("400", "Confirm password not identical", "error");
+            exit;
         }
 
         // hash password user
         $password_user_hashed = password_hash($password_user, PASSWORD_DEFAULT);
 
-        if($type == 1){
-            $password_gsso_user = NULL;
-            $password_user = $password_user_hashed;
-        }
-        else if($type == 2){
-            $password_gsso_user = $password_user_hashed;
-            $password_user = NULL;
-        }
-        else{
-            return encodeObj("400", "User type not correct", "error");
-        }
-
         $create_user_sql = $connect->prepare("
-            INSERT INTO users(id_user, email_user, name_user, password_user, password_gsso_user, modify_date_user, logged_date_user, status_user) 
-            VALUES (NULL, :email_user , :name_user , :password_user , :password_gsso_user , :modify_date_user , NULL , 1)
+            INSERT INTO users(id_user, email_user, name_user, hash_password_user, type_login_user, pfp_user, login_date_user, created_date_user, status_user) 
+            VALUES 
+            (NULL, :email_user , :name_user , :hash_password_user , :type_login_user , NULL , :login_date_user , :created_date_user , 1)
         ");
 
         $create_user_sql->execute([
             ":email_user" => $email_user,
             ":name_user" => $name_user,
-            ":password_user" => $password_user,
-            ":password_gsso_user" => $password_gsso_user,
-            ":modify_date_user" => $created_date_user
+            ":hash_password_user" => $password_user_hashed,
+            ":type_login_user" => 1,
+            ":login_date_user" =>  date("Y-m-d"),
+            ":created_date_user" =>  date("Y-m-d")
         ]);
 
         $id_user = $connect->lastInsertId();
@@ -224,16 +214,16 @@ function createUser($name_user, $email_user, $password_user, $type, $confirm_pas
     }
 
     catch(PDOException $e){
-        return encodeObj("400", "Error Login", "error");
+        return encodeObj("400", "Error Create User", "error");
         exit;
     }
 
 }
 
 function setLogginDate($connect, $id_user){
-    $update_logged_date_user = $connect->prepare("UPDATE users SET logged_date_user = :logged_date_user WHERE id_user = :id_user");
+    $update_logged_date_user = $connect->prepare("UPDATE users SET login_date_user = :login_date_user WHERE id_user = :id_user");
     $update_logged_date_user->execute([
-        ":logged_date_user" => date("Y-m-d"),
+        ":login_date_user" => date("Y-m-d"),
         ":id_user" => $id_user
     ]);
 }

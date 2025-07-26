@@ -1,5 +1,5 @@
 ## Name
-- ResipiHub
+- ResepiHub
 
 ## Problem statement
 - User have a hard time knowing what ingredient to buy.

@@ -6,7 +6,6 @@
     include '../backend/functions/system.php';
     include '../backend/functions/csrf-token.php';
     include '../backend/models/user.php';
-    include '../backend/models/tag.php';
     include '../backend/functions/user.php';
 
     checkCSRFToken();
@@ -86,53 +85,6 @@
 
     }
 
-    //@ Set cred key
-    else if(isset($_POST['set_cred_key'])){
-
-        try{
-            if(isset($_POST['cred_key']) && $_POST['cred_key'] == $secret_key){
-
-                $_SESSION['cred_key'] = $_POST['cred_key'];
-                redirectWithAlert($_SERVER["HTTP_REFERER"], "success", "Login Key Correct");
-            }
-            else{
-            
-                redirectWithAlert("../", "error", "Error Function");
-            }
-        }
-        catch(Exception $e){
-            redirectWithAlert("../", "error", "Error : $e");
-        }
-    }
-
-    //@ New Tag
-    else if(isset($_POST['new_tag'])){
-
-        try{
-            
-            $new_tag = createTag(
-                $_POST['id_user'], 
-                $_POST['name_tag'], 
-                $connect
-            );
-
-            $new_tag = json_decode($new_tag, true);
-
-            if($new_tag['status'] == "success"){
-
-                log_activity_message("../log/user_activity_log", "Add Tag Success");
-                header("Location: " . $_SERVER["HTTP_REFERER"]);   
-            }
-            else{
-                // redirectWithAlert($_SERVER["HTTP_REFERER"], "error", "Add Tag Error Proses");
-                // var_dump($new_tag);
-
-            }
-        }
-        catch(Exception $e){
-            redirectWithAlert("../", "error", "Error : $e");
-        }
-    }
     else{
         redirectWithAlert("../", "error", "Error Function");
     }

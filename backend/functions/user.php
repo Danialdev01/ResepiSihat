@@ -54,4 +54,10 @@
 
     }
 
+    //@ Set first name
+    function getFirstName($fullName){
+        preg_match('/^(\S+)/', trim($fullName), $matches);
+        return ucfirst($matches[1] ?? '');
+    }
+
 ?>

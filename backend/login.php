@@ -37,23 +37,29 @@
             setUser($userInfo['user']['id_user'], $pwd_gsso , "user", $token_name, $secret_key, $connect);
             setLogginDate($connect, $userInfo['user']['id_user']);
             log_activity_message("../log/user_activity_log", "Login Success");
-            header("Location:../guest/");
+            header("Location:../user/");
         }
         else{
             // signup new user
             $user = createUser($userinfo->givenName, $userinfo->email, $pwd_gsso, 2, $pwd_gsso, $connect);
             $user = json_decode($user, true);
 
-            // login newuser
-            setUser($user['id_user'], $user['password_user'], "user", $token_name, $secret_key, $connect);
-            setLogginDate($connect, $user['id_user']);
-            log_activity_message("../log/user_activity_log", "Login Success");
-            header("Location:../guest/");
+            if($user['id'] == 200){
+
+                // login newuser
+                setUser($user['id_user'], $user['password_user'], "user", $token_name, $secret_key, $connect);
+                setLogginDate($connect, $user['id_user']);
+                log_activity_message("../log/user_activity_log", "Login Success");
+                header("Location:../user/");
+            }
+            else{
+                redirectWithAlert("../", "error", "Login Error: " . $user['message']);
+            }
         }
 
     }
     catch(Exception $e){
-        redirectWithAlert("../", "error", "Login Error");
+        redirectWithAlert("../", "error", "Login Error: $e");
     }
     
 ?>

@@ -1,48 +1,25 @@
 <?php $location_index = "."; include('./components/head.php');?>
 
 <body>
-    <?php 
 
-        if(isset($_SESSION[$token_name]) || isset($_COOKIE[$token_name])){
-
-            include("./backend/functions/system.php");
-            include("./backend/functions/user.php");
-            include("./backend/models/user.php");
-
-            $verify = verifySessionUser($token_name, $secret_key, $connect);
-    
-            $verify = json_decode($verify, true);
-    
-            if($verify['status'] == "success"){
-    
-                $user_value = decryptUser($_SESSION[$token_name], $secret_key);
-                $id_user = $user_value['id_user'];
-        
-                $user_sql = $connect->prepare("SELECT * FROM users WHERE id_user = :id_user");
-                $user_sql->execute([
-                    ":id_user" => $id_user
-                ]);
-                $user = $user_sql->fetch(PDO::FETCH_ASSOC);
-        
-                if($user['status_user'] == 2){
-                    header("Location:./user/");
-                    $_SESSION[$token_name . "type"] = "admin";
-                }
-    
-                elseif($user['status_user'] == 1){
-                    header("Location:./guest/");
-                    $_SESSION[$token_name . "type"] = "user";
-                }
-            }
-        }
-
-        include("./backend/functions/google-login.php");
-        $google_login_url = generateGoogleUrl($clientId, $clientSecret, $redirectUri);
-    ?>
-        <?php include "./components/alert.php";?>
+    <?php $location_index = "."; require("./components/alert.php");?>
 
     <main>
-        <center>
+        <?php $location_index = "."; require('./components/home/nav.php')?>
+
+        <section id="hero">
+            <?php $location_index = "."; require('./components/home/hero.php') ?>
+        </section>
+
+        <section id="features" class="pt-20">
+            <?php $location_index = "."; require('./components/home/features.php') ?>
+        </section>
+
+        <section id="showcase">
+            <?php $location_index = "."; require('./components/home/showcase.php') ?>
+        </section>
+        
+        <!-- <center>
             <section class="text-left max-w-4xl">
                 <div class="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
                     <div class="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
@@ -62,6 +39,7 @@
                                 </div>
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-start">
+                                        
                                         <div class="flex items-center h-5">
                                             <input id="remember" aria-describedby="remember" type="checkbox" class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-primary-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-primary-600 dark:ring-offset-gray-800">
                                         </div>
@@ -90,7 +68,7 @@
                     </div>
                 </div>
             </section>
-        </center>
+        </center> -->
     </main>
 
     <?php $location_index='.'; include('./components/footer.php')?>
