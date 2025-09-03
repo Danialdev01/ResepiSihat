@@ -4,7 +4,7 @@
         <div class="flex items-center">
             <!-- <i class="fas fa-utensils text-primary-600 text-3xl mr-2"></i> -->
             <!-- <span class="text-xl font-bold text-gray-900">Resepi<span class="text-primary-600">Sihat</span></span> -->
-            <img class="h-10" src="<?php echo $location_index?>/src/assets/images/logo/logo-banner.png" alt="">
+            <img class="h-10" src="<?php echo $location_index?>/src/assets/images/logo/logo-banner.png" alt="logo">
         </div>
     </div>
 
@@ -12,7 +12,8 @@
         <div class="flex items-center space-x-3">
             <a class='flex items-center space-x-3' href="<?php echo $location_index?>/user/akaun.php">
                 <div class="relative">
-                    <img src="https://randomuser.me/api/portraits/women/45.jpg" alt="Profile" class="w-12 h-12 rounded-full object-cover border-2 border-primary-200">
+
+                    <img src="<?php echo !empty($user['pfp_user']) ? $location_index .'/uploads/profiles/'.$user['pfp_user'] : 'https://avatar.iran.liara.run/username?username=' . $user['name_user'] ; ?>" alt="Profile" class="w-12 h-12 rounded-full object-cover border-2 border-primary-200">
                     <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
                 </div>
                 <div>

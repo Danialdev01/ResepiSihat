@@ -158,50 +158,52 @@ if ($totalRecipes > 0) {
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="recipeGrid">
             <?php if (count($recipes) > 0): ?>
                 <?php foreach($recipes as $recipe): ?>
-                <div class="recipe-card rounded border border-gray-200">
-                    <div class="image-container">
-                        <div class="h-48 overflow-hidden">
-                            <img src="<?php echo htmlspecialchars($recipe['image_recipe'] ?? ''); ?>" 
-                                    alt="<?php echo htmlspecialchars($recipe['name_recipe'] ?? ''); ?>" 
-                                    class="w-full h-full object-cover">
-                        </div>
-                    </div>
-                    <div class="p-6">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <?php 
-                                $categoryClasses = [
-                                    'sarapan' => 'bg-blue-100 text-blue-800',
-                                    'makan tengahari' => 'bg-green-100 text-green-800',
-                                    'makan malam' => 'bg-purple-100 text-purple-800',
-                                    'snek' => 'bg-orange-100 text-orange-800'
-                                ];
-                                $class = $categoryClasses[$recipe['category_recipe']] ?? 'bg-gray-100 text-gray-800';
-                                ?>
-                                <span class="text-sm font-medium me-2 px-2.5 py-0.5 rounded-sm <?php echo $class; ?>">
-                                    <?php echo htmlspecialchars($recipe['category_recipe'] ?? ''); ?>
-                                </span>
-                                <h3 class="text-xl font-bold text-gray-900 mt-3 mb-2">
-                                    <?php echo htmlspecialchars($recipe['name_recipe'] ?? ''); ?>
-                                </h3>
+                    <a href="<?php echo $location_index?>/user/resepi/?id=<?php echo $recipe['id_recipe']?>">
+                        <div class="recipe-card rounded border border-gray-200">
+                            <div class="image-container">
+                                <div class="h-48 overflow-hidden">
+                                    <img src="<?php echo htmlspecialchars($recipe['image_recipe'] ?? ''); ?>" 
+                                            alt="<?php echo htmlspecialchars($recipe['name_recipe'] ?? ''); ?>" 
+                                            class="w-full h-full object-cover">
+                                </div>
                             </div>
-                            <div class="flex items-center text-yellow-500">
-                                <span class="ml-1 text-gray-700"><?php echo htmlspecialchars($recipe['rating_recipe'] ?? ''); ?></span>
+                            <div class="p-6">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <?php 
+                                        $categoryClasses = [
+                                            'sarapan' => 'bg-blue-100 text-blue-800',
+                                            'makan tengahari' => 'bg-green-100 text-green-800',
+                                            'makan malam' => 'bg-purple-100 text-purple-800',
+                                            'snek' => 'bg-orange-100 text-orange-800'
+                                        ];
+                                        $class = $categoryClasses[$recipe['category_recipe']] ?? 'bg-gray-100 text-gray-800';
+                                        ?>
+                                        <span class="text-sm font-medium me-2 px-2.5 py-0.5 rounded-sm <?php echo $class; ?>">
+                                            <?php echo htmlspecialchars($recipe['category_recipe'] ?? ''); ?>
+                                        </span>
+                                        <h3 class="text-xl font-bold text-gray-900 mt-3 mb-2">
+                                            <?php echo htmlspecialchars($recipe['name_recipe'] ?? ''); ?>
+                                        </h3>
+                                    </div>
+                                    <div class="flex items-center text-yellow-500">
+                                        <span class="ml-1 text-gray-700"><?php echo htmlspecialchars($recipe['rating_recipe'] ?? ''); ?></span>
+                                    </div>
+                                </div>
+                                <p class="text-gray-600 mb-4">
+                                    <?php echo htmlspecialchars($recipe['desc_recipe'] ?? ''); ?>
+                                </p>
+                                <div class="flex justify-between items-center">
+                                    <div class="flex items-center text-gray-500">
+                                        <i class="fas fa-clock mr-2"></i>
+                                        <span class="cooking-time"><?php echo htmlspecialchars($recipe['cooking_time_recipe'] ?? ''); ?> minit</span>
+                                        <i class="fas fa-fire ml-4 mr-2"></i>
+                                        <span class="calories"><?php echo htmlspecialchars($recipe['calories_recipe'] ?? ''); ?> kalori</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <p class="text-gray-600 mb-4">
-                            <?php echo htmlspecialchars($recipe['desc_recipe'] ?? ''); ?>
-                        </p>
-                        <div class="flex justify-between items-center">
-                            <div class="flex items-center text-gray-500">
-                                <i class="fas fa-clock mr-2"></i>
-                                <span class="cooking-time"><?php echo htmlspecialchars($recipe['cooking_time_recipe'] ?? ''); ?> minit</span>
-                                <i class="fas fa-fire ml-4 mr-2"></i>
-                                <span class="calories"><?php echo htmlspecialchars($recipe['calories_recipe'] ?? ''); ?> kalori</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                    </a>
                 <?php endforeach; ?>
             <?php endif; ?>
         </div>

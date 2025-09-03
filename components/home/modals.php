@@ -12,7 +12,7 @@
             <!-- Modal header -->
             <div class="px-6 py-4 border-b">
                 <h3 class="text-xl font-semibold text-gray-900">
-                    Daftar Masuk ke Akaun Anda
+                    Log Masuk ke Akaun Anda
                 </h3>
             </div>
             
@@ -29,7 +29,7 @@
                             <svg class="w-4 h-4 me-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 18 19">
                             <path fill-rule="evenodd" d="M8.842 18.083a8.8 8.8 0 0 1-8.65-8.948 8.841 8.841 0 0 1 8.8-8.652h.153a8.464 8.464 0 0 1 5.7 2.257l-2.193 2.038A5.27 5.27 0 0 0 9.09 3.4a5.882 5.882 0 0 0-.2 11.76h.124a5.091 5.091 0 0 0 5.248-4.057L14.3 11H9V8h8.34c.066.543.095 1.09.088 1.636-.086 5.053-3.463 8.449-8.4 8.449l-.186-.002Z" clip-rule="evenodd"/>
                             </svg>
-                            Sign in dengan Google
+                            Log Masuk dengan Google
                         </button>
                     </a>
                 </center>
@@ -44,24 +44,24 @@
                 <form method="post" action="<?php echo $location_index?>/backend/user.php" class="space-y-4">
                     <input type="hidden" name="token" value="<?php echo $token?>">
                     <div>
-                        <label for="email" class="block mb-2 text-sm font-medium text-gray-900">Emel atau Nama Pengguna</label>
-                        <input type="text" name="email" id="email" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" placeholder="nama@contoh.com" required>
+                        <label for="email_user" class="block mb-2 text-sm font-medium text-gray-900">Emel atau Nama Pengguna</label>
+                        <input type="text" name="email_user" id="email_user" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" placeholder="nama@contoh.com" required>
                     </div>
                     <div>
-                        <label for="password" class="block mb-2 text-sm font-medium text-gray-900">Kata Laluan</label>
-                        <input type="password" name="password" id="password" placeholder="••••••••" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" required>
+                        <label for="password_user" class="block mb-2 text-sm font-medium text-gray-900">Kata Laluan</label>
+                        <input type="password" name="password_user" id="password_user" placeholder="••••••••" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" required>
                     </div>
                     <div class="flex justify-between items-center">
                         <div class="flex items-start">
                             <div class="flex items-center h-5">
-                                <input id="remember" type="checkbox" class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-primary-300">
+                                <input id="remember" type="checkbox" checked class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-primary-300">
                             </div>
                             <label for="remember" class="ml-2 text-sm text-gray-700">Ingat saya</label>
                         </div>
                         <a href="#" class="text-sm text-primary-600 hover:underline">Lupa kata laluan?</a>
                     </div>
-                    <button type="submit" class="w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
-                        Daftar Masuk
+                    <button type="submit" name='signin' class="w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
+                        Log Masuk
                     </button>
                 </form>
             </div>

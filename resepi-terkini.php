@@ -9,6 +9,7 @@
         <section id="resepi-terkini" class="pt-20">
             <center>
                 <div class="text-center max-w-3xl mx-auto mb-12">
+                    <br><br>
                     <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">
                         Resipi Sihat untuk Anda
                     </h1>

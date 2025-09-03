@@ -21,6 +21,7 @@ return array(
     'Psr\\Clock\\' => array($vendorDir . '/psr/clock/src'),
     'Psr\\Cache\\' => array($vendorDir . '/psr/cache/src'),
     'ParagonIE\\ConstantTime\\' => array($vendorDir . '/paragonie/constant_time_encoding/src'),
+    'PHPMailer\\PHPMailer\\' => array($vendorDir . '/phpmailer/phpmailer/src'),
     'Monolog\\' => array($vendorDir . '/monolog/monolog/src/Monolog'),
     'Minishlink\\WebPush\\' => array($vendorDir . '/minishlink/web-push/src'),
     'Jose\\Component\\' => array($vendorDir . '/web-token/jwt-library'),

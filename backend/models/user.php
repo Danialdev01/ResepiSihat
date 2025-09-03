@@ -44,7 +44,7 @@ function checkUserPassword($email_user, $password_user, $connect){
 
     if($userInfo['exists'] == true){
 
-        if(password_verify($password_user, $userInfo['user']['password_user'])){
+        if(password_verify($password_user, $userInfo['user']['hash_password_user'])){
 
             $status = encodeObj("200", "Sign up success", "success");
 
@@ -218,6 +218,56 @@ function createUser($name_user, $email_user, $password_user, $type, $confirm_pas
         exit;
     }
 
+}
+
+function updateUser($id_user, $name_user, $email_user, $connect){
+
+    try{
+
+        $email_user = validateInput($email_user);
+        $name_user = validateInput($name_user);
+        $id_user = validateInput($id_user);
+
+        $user = checkUser(NULL, $id_user, $connect);
+
+        // check if user exit
+        if($user['exists'] == false){
+            return encodeObj("400", "User Not Exits", "error");
+            exit;
+        }
+
+        $update_user_sql = $connect->prepare("
+            UPDATE users 
+            SET 
+                email_user = :email_user,
+                name_user = :name_user
+            WHERE 
+                id_user = :id_user
+        ");
+
+        $update_user_sql->execute([
+            ":email_user" => $email_user,
+            ":name_user" => $name_user,
+            ":id_user" =>  $id_user
+        ]);
+    
+        $status = encodeObj("200", "Update success", "success");
+        $user = [
+    
+            "id_user" => $id_user,
+            "email_user" => $email_user,
+            "name_user" => $name_user
+        ];
+    
+        $user = json_encode($user);
+        return addJson($status, $user);
+    }
+
+    catch(PDOException $e){
+        return encodeObj("400", "Error Update User", "error");
+        exit;
+    } 
+    
 }
 
 function setLogginDate($connect, $id_user){
