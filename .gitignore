@@ -1,3 +1,4 @@
 config/.env
 log/user_activity_log
 log/error_log
+uploads/profiles/*
