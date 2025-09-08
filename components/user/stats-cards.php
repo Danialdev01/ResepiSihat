@@ -1,3 +1,16 @@
+<?php
+
+function getUserRecipeLikes($userId, $connect) {
+    $sql = "SELECT SUM(num_likes_recipe) as total_likes FROM recipes WHERE id_user = :user_id AND status_recipe = 1";
+    $stmt = $connect->prepare($sql);
+    $stmt->execute([':user_id' => $userId]);
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    return $result['total_likes'] ? $result['total_likes'] : 0;
+}
+
+?>
+
 <!-- Stats Cards -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
     <a href="<?php echo $location_index?>/user/resepi/saya.php">
@@ -45,8 +58,8 @@
     <div class="card bg-white rounded-xl p-5">
         <div class="flex items-center justify-between">
             <div>
-                <div class="text-gray-500">Kesukaan</div>
-                <div class="text-2xl font-bold mt-1">1,450</div>
+                <div class="text-gray-500">Resepi disuka orang lain</div>
+                <div class="text-2xl font-bold mt-1"><?php echo getUserRecipeLikes($user['id_user'], $connect)?></div>
             </div>
             <div class="bg-blue-100 p-3 rounded-lg">
                 <i class="fas fa-heart text-blue-700 text-2xl"></i>

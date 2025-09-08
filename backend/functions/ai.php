@@ -17,7 +17,7 @@ function generateAI($prompt, $ai_api_key){
         'content' => $prompt
       ]
     ],
-    'model' => 'llama3-8b-8192'
+    'model' => 'llama-3.1-8b-instant'
   ];
   
   // Initialize a cURL session

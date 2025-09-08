@@ -169,7 +169,7 @@
                             <center>
                                 <h3 class="text-xl font-bold text-gray-700 mb-2">Tiada Resipi Ditemui</h3>
                                 <p class="text-gray-600 max-w-md mx-auto">
-                                    Kami tidak menemui sebarang resipi yang sepadan dengan carian anda. Cuba kata kunci lain.
+                                    Kami tidak menemui sebarang resipi yang anda telah hasilkan. <a class="text-primary-700" href="./baru.php">Cipta resepi baru.</a>
                                 </p>
                             </center>
                         </div>

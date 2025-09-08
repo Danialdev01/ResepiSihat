@@ -75,11 +75,16 @@
                     </div>
                     <!-- Modal body -->
                     <div class="p-4 md:p-5">
+                        <div class="relative w-full rounded-xl overflow-hidden shadow-lg">
+                            <img 
+                                src="<?php echo htmlspecialchars($resepi_terkini['image_recipe']) ?>" 
+                                alt="Nasi Goreng Cina"
+                                class="w-full h-[350px] object-cover"
+                            />
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                        </div>
+                        <br>
                         <div class="grid gap-4 mb-4 grid-cols-2">
-                            <div class="col-span-2">
-                                <label for="name" class="block mb-2 text-sm font-medium text-gray-900">Nama Resepi</label>
-                                <input type="text" name="name" id="name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5" value='<?php echo htmlspecialchars($resepi_terkini['name_recipe']) ?>' placeholder="" required="">
-                            </div>
                             <div class="col-span-2 sm:col-span-1">
                                 <label for="price" class="block mb-2 text-sm font-medium text-gray-900">Anggaran Masa Penyediaan</label>
                                 <input type="number" name="price" id="price" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5" value="<?php echo htmlspecialchars($resepi_terkini['cooking_time_recipe']) ?>" required="">

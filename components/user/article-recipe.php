@@ -1,10 +1,19 @@
-
 <?php 
-
     function formatDate($dateString) {
         $date = new DateTime($dateString);
         return $date->format('F j, Y');
     }
+    
+    // Fetch approved comments for this recipe
+    $comments_sql = $connect->prepare("
+        SELECT c.*, u.name_user 
+        FROM comments c 
+        JOIN users u ON c.id_user = u.id_user 
+        WHERE c.id_recipe = :recipe_id AND c.status_comment = 1
+        ORDER BY c.created_date_comment DESC
+    ");
+    $comments_sql->execute([':recipe_id' => $recipe['id_recipe']]);
+    $comments = $comments_sql->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!-- Recipe Content -->
 <main class="container mx-auto px-4 py-8">
@@ -31,6 +40,16 @@
             <?php echo htmlspecialchars($recipe['desc_recipe']) ?>
         </p>
 
+        <?php 
+            $user_recipe_sql = $connect->prepare("SELECT pfp_user, name_user, created_date_user FROM users WHERE id_user = :id_user");
+            $user_recipe_sql->execute([
+                ":id_user" => $recipe['id_user']
+            ]);
+            $user_recipe = $user_recipe_sql->fetch(PDO::FETCH_ASSOC);
+
+            $created_date_user = date_create($user_recipe['created_date_user'])
+        ?>
+
         <!-- Recipe Meta -->
         <div class="flex flex-wrap items-center gap-6 text-gray-500 mb-6">
             <div class="flex items-center gap-1">
@@ -48,24 +67,107 @@
         </div>
 
         <!-- Action Buttons -->
-        <div class="flex flex-wrap gap-3">
-            <button class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-red-50 hover:text-red-600 hover:border-red-200">
-                <i class="far fa-heart mr-2"></i>
-                Suka (<?php echo $recipe['num_likes_recipe']?>)
-            </button>
-            <button class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200">
-                <i class="far fa-bookmark mr-2"></i>
-                Simpan Resipi
-            </button>
-            <button class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-green-50 hover:text-green-600 hover:border-green-200">
-                <i class="far fa-share-square mr-2"></i>
-                Kongsi
-            </button>
-            <button class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200">
-                <i class="fa fa-print mr-2"></i>
-                Cetak
-            </button>
+        <div class="md:flex md:flex-wrap lg:gap-3 gap-2">
+
+            <div class="flex items-center gap-4">
+                <img class="w-10 h-10 rounded-full" src="<?php echo !empty($user_recipe['pfp_user']) ? $location_index .'/uploads/profiles/'.$user_recipe['pfp_user'] : 'https://avatar.iran.liara.run/username?username=' . $user_recipe['name_user'] ; ?>" alt="Profile Picture">
+                <div class="font-medium">
+                    <div><?php echo htmlspecialchars($user_recipe['name_user'])?></div>
+                    <div class="text-sm text-gray-500">Joined in <?php echo date_format($created_date_user ,"M Y")?></div>
+                </div>
+            </div>
+            <br>
+
+                <div class="flex flex-wrap lg:gap-3 gap-2">
+
+                    <!-- likes -->
+                    <form method="POST" action="<?php echo $location_index?>/backend/recipe.php">
+        
+                        <?php 
+        
+                            $likes_sql = $connect->prepare("SELECT id_like FROM likes WHERE id_user = :id_user AND id_recipe = :id_recipe LIMIT 1");
+                            $likes_sql->execute([
+                                ":id_user" => $user['id_user'],
+                                ":id_recipe" => $recipe['id_recipe']
+                            ]);
+                            
+                            if($likes_sql->rowCount() > 0){
+                                $user_has_liked = true;
+                                $status = "dislike";
+                            }
+                            else{
+                                
+                                $status = "like";
+                            }
+        
+                        ?>
+                        <input type="hidden" name="token" value='<?php echo $token?>'>
+                        <input type="hidden" name="id_recipe" value="<?php echo $recipe['id_recipe']?>">
+                        <input type="hidden" name="type" value="<?php echo $status?>">
+        
+                        <button 
+                            type="submit" 
+                            name="like_recipe"
+                            class="inline-flex items-center px-4 py-2 border rounded-md shadow-sm text-sm font-medium <?php echo $user_has_liked ? 'bg-red-50 text-red-600 border-red-200' : 'bg-white text-gray-700 border-gray-300 hover:bg-red-50 hover:text-red-600 hover:border-red-200'; ?>"
+                        >
+                            <i class="far fa-heart mr-2"></i>
+                            Suka (<?php echo $recipe['num_likes_recipe']?>)
+                        </button>
+                    </form>
+        
+                    <!-- bookmark -->
+                    <form method="POST" action="<?php echo $location_index?>/backend/recipe.php">
+        
+                        <?php 
+        
+                            $bookmarks_sql = $connect->prepare("SELECT id_bookmark FROM bookmarks WHERE id_user = :id_user AND id_recipe = :id_recipe LIMIT 1");
+                            $bookmarks_sql->execute([
+                                ":id_user" => $user['id_user'],
+                                ":id_recipe" => $recipe['id_recipe']
+                            ]);
+                            
+                            if($bookmarks_sql->rowCount() > 0){
+                                $user_has_bookmarked = true;
+                                $status = "disbookmark";
+                            }
+                            else{
+                                
+                                $status = "bookmark";
+                            }
+        
+                        ?>
+                        <input type="hidden" name="token" value='<?php echo $token?>'>
+                        <input type="hidden" name="id_recipe" value="<?php echo $recipe['id_recipe']?>">
+                        <input type="hidden" name="type" value="<?php echo $status?>">
+        
+                        <button 
+                            type="submit" 
+                            name="bookmark_recipe"
+                            class="inline-flex items-center px-4 py-2 border rounded-md shadow-sm text-sm font-medium <?php echo $user_has_bookmarked ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200'; ?>"
+                        >
+                            <i class="far fa-bookmark mr-2"></i>
+                            Simpan Resipi
+                        </button>
+                    </form>
+        
+                    <button data-tooltip-target="tooltip-url-shortener" data-copy-to-clipboard-target="url-shortener" class="focus:ring-4 focus:ring-primary-300 focus:bg-primary-50 inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-green-50 hover:text-green-600 hover:border-green-200">
+                        <i class="far fa-share-square mr-2"></i>
+                        <input id="url-shortener" type="text" aria-describedby="helper-text-explanation" class="hidden" value="<?php echo $domain . "/user/resepi/?id=" . $recipe['id_recipe'] ?>" readonly disabled />
+                        Kongsi
+                    </button>
+                    <div id="tooltip-url-shortener" role="tooltip" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-xs opacity-0 tooltip dark:bg-gray-700">
+                        <span id="default-tooltip-message">Copy link</span>
+                        <span id="success-tooltip-message" class="hidden">Copied!</span>
+                        <div class="tooltip-arrow" data-popper-arrow></div>
+                    </div>
+                    <button class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200">
+                        <i class="fa fa-print mr-2"></i>
+                        Cetak
+                    </button>
+                </div>
+            
         </div>
+
     </div>
 
     <div class="grid lg:grid-cols-3 gap-8">
@@ -106,10 +208,10 @@
                     </div>
                 </div>
 
-                <hr class="my-6 border-gray-200">
+                <!-- <hr class="my-6 border-gray-200"> -->
 
                 <!-- Nutrition Info -->
-                <div class="space-y-3">
+                <!-- <div class="space-y-3">
                     <h3 class="font-semibold flex items-center gap-2 text-amber-600">
                         <i class="far fa-star"></i>
                         Maklumat Pemakanan (setiap hidangan)
@@ -132,7 +234,7 @@
                             <div class="text-gray-500 text-xs">Lemak</div>
                         </div>
                     </div>
-                </div>
+                </div> -->
             </div>
         </div>
 
@@ -159,50 +261,9 @@
                 
                 <div class="space-y-6">
                     <div class="flex gap-4">
-                        <div class="step-number">1</div>
                         <div class="flex-1">
                             <p class="text-gray-800 leading-relaxed">
-                                Panaskan minyak dalam kuali. Tumis bawang putih sehingga kekuningan.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="flex gap-4">
-                        <div class="step-number">2</div>
-                        <div class="flex-1">
-                            <p class="text-gray-800 leading-relaxed">
-                                Masukkan ikan bilis dan goreng sehingga garing.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="flex gap-4">
-                        <div class="step-number">3</div>
-                        <div class="flex-1">
-                            <p class="text-gray-800 leading-relaxed">
-                                Masukkan nasi putih dan kacau rata. Tambahkan kicap dan garam.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="flex gap-4">
-                        <div class="step-number">4</div>
-                        <div class="flex-1">
-                            <p class="text-gray-800 leading-relaxed">
-                                Push nasi ke tepi kuali, pecahkan telur di tengah dan kacau cepat.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="flex gap-4">
-                        <div class="step-number">5</div>
-                        <div class="flex-1">
-                            <p class="text-gray-800 leading-relaxed">
-                                Gaul sebati telur dengan nasi. Kacau selama 3-4 minit sehingga semua bahan sebati.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="flex gap-4">
-                        <div class="step-number">6</div>
-                        <div class="flex-1">
-                            <p class="text-gray-800 leading-relaxed">
-                                Hidangkan panas dengan hirisan timun dan tomato.
+                                <?php echo htmlspecialchars($recipe['tutorial_recipe'])?>
                             </p>
                         </div>
                     </div>
@@ -210,7 +271,7 @@
             </div>
 
             <!-- Video -->
-            <div class="bg-gradient-to-r from-orange-500 to-orange-700 rounded-xl shadow-md p-6 text-center">
+            <div class="bg-gradient-to-r from-orange-500 to-orange-700 rounded-xl shadow-md p-6 text-center mb-8">
                 <div class="aspect-w-12 aspect-h-9">
                     <iframe src="<?php echo htmlspecialchars($recipe['url_resource_recipe']); ?>" 
                             class="w-full h-64 rounded-lg" frameborder="0" 
@@ -220,28 +281,93 @@
                 </div>
             </div>
 
-            <div class="bg-gradient-to-r from-orange-500 to-orange-700 rounded-xl shadow-md p-6 text-center">
-                <div class="text-black mb-4">
-                    <h3 class="text-lg font-semibold mb-2">Selamat Mencuba! 🍽️</h3>
-                    <p class="text-black/90 text-sm">
-                        <?php 
-                            // Fetch creator's name
-                            $creator_sql = $connect->prepare("SELECT name_user FROM users WHERE id_user = :id");
-                            $creator_sql->execute([':id' => $recipe['id_user']]);
-                            $creator = $creator_sql->fetch(PDO::FETCH_ASSOC);
-                        ?>
-                        Dicipta oleh <?php echo htmlspecialchars($creator['name_user'])?> • <?php echo htmlspecialchars($recipe['num_likes_recipe'])?> orang menyukai resipi ini
-                    </p>
+            
+            
+            <!-- Comments Section -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-2xl font-bold mb-6 flex items-center gap-2 text-primary-600">
+                    <i class="far fa-comments"></i>
+                    Komen
+                    <span class="text-gray-500 text-lg font-normal">(<?php echo count($comments); ?>)</span>
+                </h2>
+                
+                <!-- Comment Form -->
+                <div class="mb-8">
+                    <?php if (isset($user['id_user'])): ?>
+                        <form method="POST" action="<?php echo $location_index?>/backend/recipe.php">
+                            <input type="hidden" name="token" value="<?php echo $token?>">
+                            <input type="hidden" name="id_recipe" value="<?php echo $recipe['id_recipe']?>">
+
+                            <div class="flex gap-4">
+                                <div class="flex-shrink-0">
+                                    <?php 
+                                        // Get current user's avatar
+                                        $user_sql = $connect->prepare("SELECT pfp_user, name_user FROM users WHERE id_user = :id");
+                                        $user_sql->execute([':id' => $user['id_user']]);
+                                        $current_user = $user_sql->fetch(PDO::FETCH_ASSOC);
+                                    ?>
+                                    <img src="<?php echo !empty($current_user['pfp_user']) ? $location_index .'/uploads/profiles/'.$current_user['pfp_user'] : 'https://avatar.iran.liara.run/username?username=' . $current_user['name_user'] ; ?>" alt="Avatar" class="w-10 h-10 rounded-full object-cover">
+                                </div>
+                                <div class="flex-1">
+                                    <textarea 
+                                        name="text_comment" 
+                                        rows="3" 
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500" 
+                                        placeholder="Tulis komen anda di sini..."
+                                        required
+                                    ></textarea>
+                                    <?php if (isset($comment_error)): ?>
+                                        <p class="text-red-500 text-sm mt-1"><?php echo $comment_error; ?></p>
+                                    <?php endif; ?>
+                                    <div class="mt-2 flex justify-end">
+                                        <button 
+                                            type="submit" 
+                                            name="comment_recipe"
+                                            class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+                                        >
+                                            Hantar Komen
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    <?php else: ?>
+                        <div class="text-center py-4 border border-gray-200 rounded-lg">
+                            <p class="text-gray-600 mb-2">Anda perlu log masuk untuk memberikan komen.</p>
+                            <a href="/login.php" class="text-primary-600 hover:underline font-medium">Log Masuk</a>
+                        </div>
+                    <?php endif; ?>
                 </div>
-                <div class="flex flex-wrap gap-2 justify-center">
-                    <button class="inline-flex items-center px-3 py-1.5 border border-white/30 rounded-md text-sm font-medium text-black bg-primary/20 hover:bg-primary/30">
-                        <i class="far fa-heart mr-2"></i>
-                        Suka
-                    </button>
-                    <button class="inline-flex items-center px-3 py-1.5 border border-white/30 rounded-md text-sm font-medium text-black bg-primary/20 hover:bg-primary/30">
-                        <i class="far fa-share-square mr-2"></i>
-                        Kongsi
-                    </button>
+                
+                <!-- Comments List -->
+                <div class="space-y-6">
+                    <?php if (count($comments) > 0): ?>
+                        <?php foreach ($comments as $comment): ?>
+                            <div class="flex gap-4">
+                                <div class="flex-shrink-0">
+                                    <img 
+                                        src="<?php echo !empty($comment['pfp_user']) ? $location_index .'/uploads/profiles/'.$comment['pfp_user'] : 'https://avatar.iran.liara.run/username?username=' . $comment['name_user'] ; ?>" 
+                                        alt="<?php echo htmlspecialchars($comment['name_user']); ?>" 
+                                        class="w-10 h-10 rounded-full object-cover"
+                                    >
+                                </div>
+                                <div class="flex-1">
+                                    <div class="bg-gray-50 rounded-lg p-4">
+                                        <div class="flex justify-between items-start mb-2">
+                                            <h4 class="font-semibold text-gray-800"><?php echo htmlspecialchars($comment['name_user']); ?></h4>
+                                            <span class="text-sm text-gray-500"><?php echo formatDate($comment['created_date_comment']); ?></span>
+                                        </div>
+                                        <p class="text-gray-700"><?php echo nl2br(htmlspecialchars($comment['text_comment'])); ?></p>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <div class="text-center py-8 text-gray-500">
+                            <i class="fa fa-comment-slash text-4xl mb-3"></i>
+                            <p>Tiada komen lagi. Jadilah yang pertama untuk memberikan komen!</p>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -296,18 +422,21 @@
             while ($recommended_recipe = $recommended_recipe_sql->fetch(PDO::FETCH_ASSOC)) {
                 ?>
 
-                <div class="bg-white rounded-xl shadow-md overflow-hidden">
-                    <img src="<?php echo htmlspecialchars($recommended_recipe['image_recipe'])?>" alt="Resipi 1" class="w-full h-48 object-cover">
-                    <div class="p-4">
-                        <h3 class="font-bold text-lg mb-2"><?php echo htmlspecialchars($recommended_recipe['name_recipe']) ?></h3>
-                        <p class="text-gray-600 text-sm mb-4"><?php echo htmlspecialchars($recommended_recipe['desc_recipe']) ?></p>
-                        <div class="flex items-center text-sm text-gray-500">
-                            <span><i class="far fa-clock mr-1"></i><?php echo htmlspecialchars($recommended_recipe['cooking_time_recipe']) ?> minit</span>
-                            <span class="mx-2">•</span>
-                            <span><i class="far fa-heart mr-2"></i><?php echo htmlspecialchars($recommended_recipe['num_likes_recipe']) ?></span>
+                <a href="./?id=<?php echo $recommended_recipe['id_recipe']?>">
+
+                    <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                        <img src="<?php echo htmlspecialchars($recommended_recipe['image_recipe'])?>" alt="Resipi 1" class="w-full h-48 object-cover">
+                        <div class="p-4">
+                            <h3 class="font-bold text-lg mb-2"><?php echo htmlspecialchars($recommended_recipe['name_recipe']) ?></h3>
+                            <p class="text-gray-600 text-sm mb-4"><?php echo htmlspecialchars($recommended_recipe['desc_recipe']) ?></p>
+                            <div class="flex items-center text-sm text-gray-500">
+                                <span><i class="far fa-clock mr-1"></i><?php echo htmlspecialchars($recommended_recipe['cooking_time_recipe']) ?> minit</span>
+                                <span class="mx-2">•</span>
+                                <span><i class="far fa-heart mr-2"></i><?php echo htmlspecialchars($recommended_recipe['num_likes_recipe']) ?></span>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </a>
 
                 <?php
 
@@ -317,6 +446,29 @@
         
     </div>
 </section>
+
+<style>
+    .step-number {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        background-color: #3B82F6;
+        color: white;
+        border-radius: 50%;
+        font-weight: bold;
+        flex-shrink: 0;
+    }
+    
+    .nutrition-card {
+        transition: transform 0.2s;
+    }
+    
+    .nutrition-card:hover {
+        transform: translateY(-2px);
+    }
+</style>
 
 <script>
     // Function to handle like button
@@ -334,45 +486,40 @@
         alert('Pautan resipi telah disalin ke papan klip!');
     }
 
-    // document.getElementById('video_recipe').addEventListener('change', function(e) {
-    //     const videoUrl = e.target.value;
-    //     const previewContainer = document.querySelector('.aspect-w-16');
-        
-    //     if (videoUrl) {
-    //         // Create or update iframe for video preview
-    //         let iframe = document.querySelector('#video-preview');
-    //         if (!iframe) {
-    //             iframe = document.createElement('iframe');
-    //             iframe.id = 'video-preview';
-    //             iframe.className = 'w-full h-64 rounded-lg';
-    //             iframe.setAttribute('frameborder', '0');
-    //             iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
-    //             iframe.setAttribute('allowfullscreen', '');
-                
-    //             // Create container if it doesn't exist
-    //             if (!previewContainer) {
-    //                 const container = document.createElement('div');
-    //                 container.className = 'mt-4';
-                    
-    //                 const label = document.createElement('label');
-    //                 label.className = 'block mb-2 text-sm font-medium text-gray-900';
-    //                 label.textContent = 'Pratonton Video';
-                    
-    //                 const aspectDiv = document.createElement('div');
-    //                 aspectDiv.className = 'aspect-w-16 aspect-h-9';
-                    
-    //                 container.appendChild(label);
-    //                 container.appendChild(aspectDiv);
-    //                 aspectDiv.appendChild(iframe);
-                    
-    //                 // Insert after video URL input
-    //                 document.getElementById('video_recipe').parentNode.appendChild(container);
-    //             } else {
-    //                 previewContainer.appendChild(iframe);
-    //             }
-    //         }
-            
-    //         iframe.setAttribute('src', videoUrl);
-    //     }
-    // });
+    window.addEventListener('load', function() {
+        const clipboard = FlowbiteInstances.getInstance('CopyClipboard', 'url-shortener');
+        const tooltip = FlowbiteInstances.getInstance('Tooltip', 'tooltip-url-shortener');
+
+        const $defaultIcon = document.getElementById('default-icon');
+        const $successIcon = document.getElementById('success-icon');
+
+        const $defaultTooltipMessage = document.getElementById('default-tooltip-message');
+        const $successTooltipMessage = document.getElementById('success-tooltip-message');
+
+        clipboard.updateOnCopyCallback((clipboard) => {
+            showSuccess();
+
+            // reset to default state
+            setTimeout(() => {
+                resetToDefault();
+            }, 2000);
+        })
+
+        const showSuccess = () => {
+            $defaultIcon.classList.add('hidden');
+            $successIcon.classList.remove('hidden');
+            $defaultTooltipMessage.classList.add('hidden');
+            $successTooltipMessage.classList.remove('hidden');    
+            tooltip.show();
+        }
+
+        const resetToDefault = () => {
+            $defaultIcon.classList.remove('hidden');
+            $successIcon.classList.add('hidden');
+            $defaultTooltipMessage.classList.remove('hidden');
+            $successTooltipMessage.classList.add('hidden');
+            tooltip.hide();
+        }
+    })
+
 </script>

@@ -167,9 +167,22 @@ if ($totalRecipes > 0) {
                                             class="w-full h-full object-cover">
                                 </div>
                             </div>
-                            <div class="p-6">
+                            <div class="px-6 pb-4">
+                                <h3 class="text-xl font-bold text-gray-900 mt-3 mb-2">
+                                    <?php echo htmlspecialchars($recipe['name_recipe'] ?? ''); ?>
+                                </h3>
+                                <?php
+
+                                    $name_user_sql = $connect->prepare("SELECT name_user FROM users WHERE id_user = :id_user");
+                                    $name_user_sql->execute([":id_user" => $recipe['id_user']]);
+                                    $name_user = $name_user_sql->fetch(PDO::FETCH_ASSOC);
+
+                                ?>
+                                <p class="text-gray-600 mb-4">
+                                    <?php echo htmlspecialchars($recipe['desc_recipe'] ?? ''); ?>
+                                </p>
                                 <div class="flex justify-between items-start">
-                                    <div>
+                                    <div class="mb-4">
                                         <?php 
                                         $categoryClasses = [
                                             'sarapan' => 'bg-blue-100 text-blue-800',
@@ -182,18 +195,13 @@ if ($totalRecipes > 0) {
                                         <span class="text-sm font-medium me-2 px-2.5 py-0.5 rounded-sm <?php echo $class; ?>">
                                             <?php echo htmlspecialchars($recipe['category_recipe'] ?? ''); ?>
                                         </span>
-                                        <h3 class="text-xl font-bold text-gray-900 mt-3 mb-2">
-                                            <?php echo htmlspecialchars($recipe['name_recipe'] ?? ''); ?>
-                                        </h3>
                                     </div>
                                     <div class="flex items-center text-yellow-500">
                                         <span class="ml-1 text-gray-700"><?php echo htmlspecialchars($recipe['rating_recipe'] ?? ''); ?></span>
                                     </div>
                                 </div>
-                                <p class="text-gray-600 mb-4">
-                                    <?php echo htmlspecialchars($recipe['desc_recipe'] ?? ''); ?>
-                                </p>
                                 <div class="flex justify-between items-center">
+                                    <div class="text-sm text-gray-800 font-bold"><?php echo explode(' ', trim($name_user['name_user']))[0]?></div>
                                     <div class="flex items-center text-gray-500">
                                         <i class="fas fa-clock mr-2"></i>
                                         <span class="cooking-time"><?php echo htmlspecialchars($recipe['cooking_time_recipe'] ?? ''); ?> minit</span>

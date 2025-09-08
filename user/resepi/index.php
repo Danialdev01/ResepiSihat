@@ -8,7 +8,7 @@
 
     // If no recipe found, redirect
     if(!$recipe) {
-        header("Location: ../");
+        echo '<script>window.location.href = window.location.href.split("?")[0];</script>';
         exit();
     }
     
