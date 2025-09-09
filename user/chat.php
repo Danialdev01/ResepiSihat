@@ -1,96 +1,10 @@
+
 <?php
+
 include('../config/connect.php');
 
 // API Key Groq (ganti dengan API key Anda)
 $groqApiKey = $ai_api_key;
-
-// Get user info (assuming user is logged in and user_id is stored in session)
-$userId = $_SESSION['user_id'] ?? 1; // Default to 1 for demo if not set
-$userStatus = 'free'; // Default status, should be fetched from database
-
-// Fetch user status from database
-try {
-    $stmt = $connect->prepare("SELECT status_user FROM users WHERE id_user = ?");
-    $stmt->execute([$userId]);
-    $user = $stmt->fetch();
-    if ($user) {
-        $userStatus = $user['status_user'] == 2 ? 'premium' : 'free';
-    }
-} catch (PDOException $e) {
-    // Log error but continue with default status
-    error_log("Error fetching user status: " . $e->getMessage());
-}
-
-// Set usage limits
-$usageLimit = ($userStatus === 'premium') ? 1000 : 5; // Premium users have higher limit
-
-// Get today's usage count - count user messages from responses table
-$usageCount = 0;
-try {
-    $stmt = $connect->prepare("
-        SELECT COUNT(*) as usage_count 
-        FROM responses r
-        JOIN users u ON r.id_user = u.id_user
-        WHERE u.id_user = ? 
-        AND r.status_response = '0'
-    ");
-    $stmt->execute([$userId]);
-    $result = $stmt->fetch();
-    $usageCount = $result['usage_count'];
-} catch (PDOException $e) {
-    error_log("Error fetching usage count: " . $e->getMessage());
-}
-
-// Check if user has exceeded limit
-$hasExceededLimit = ($userStatus === 'free' && $usageCount >= $usageLimit);
-
-// Get all previous messages from responses table for the user
-$allMessages = [];
-try {
-    $stmt = $connect->prepare("
-        SELECT r.text_user_response, r.text_ai_response, r.created_date_response, c.id_chat
-        FROM responses r
-        JOIN chats c ON r.id_chat = c.id_chat
-        WHERE c.id_user = ? 
-        AND r.status_response = 'active'
-        ORDER BY r.created_date_response ASC
-    ");
-    $stmt->execute([$userId]);
-    $allMessages = $stmt->fetchAll();
-} catch (PDOException $e) {
-    error_log("Error fetching all messages: " . $e->getMessage());
-}
-
-// Build conversation from all messages
-$conversationHistory = [];
-foreach ($allMessages as $message) {
-    if (!empty($message['text_user_response'])) {
-        $conversationHistory[] = [
-            'role' => 'user',
-            'content' => $message['text_user_response'],
-            'timestamp' => $message['created_date_response']
-        ];
-    }
-    if (!empty($message['text_ai_response'])) {
-        $conversationHistory[] = [
-            'role' => 'assistant',
-            'content' => $message['text_ai_response'],
-            'timestamp' => $message['created_date_response']
-        ];
-    }
-}
-
-// If we have a current chat in session, use it, otherwise create a new one
-if (!isset($_SESSION['id_chat'])) {
-    try {
-        $stmt = $connect->prepare("INSERT INTO chats (id_user, title_chat, created_date_chat, status_chat) 
-                                   VALUES (?, 'Percakapan Baru', NOW(), 'active')");
-        $stmt->execute([$userId]);
-        $_SESSION['id_chat'] = $connect->lastInsertId();
-    } catch (PDOException $e) {
-        error_log("Error creating new chat: " . $e->getMessage());
-    }
-}
 
 // Fungsi untuk berinteraksi dengan Groq AI
 function chatWithAI($messages) {
@@ -236,63 +150,119 @@ function searchRecipesByKeywords($keywords) {
     return $stmt->fetchAll();
 }
 
+// Mulai sesi untuk menyimpan percakapan
+
+// Inisialisasi percakapan jika belum ada
+if (!isset($_SESSION['conversation'])) {
+    $_SESSION['conversation'] = [
+        [
+            'role' => 'system',
+            'content' => '
+                     **Peranan Anda:** 
+                        Anda adalah Pakar Pemakanan Berlesen dan AI Assistant Resepi Sihat. Tugas anda adalah membantu pengguna mencari resepi yang paling sesuai berdasarkan keperluan pemakanan, citarasa, dan gaya hidup mereka.
+
+                        **Langkah Analisis Wajib:**
+                        1. **Kenal pasti Profil Pengguna** (tanya jika tidak lengkap):
+                        - "Bolehkah anda kongsikan umur, jantina, dan aktiviti harian?"
+                        - "Adakah anda mempunyai keadaan kesihatan tertentu? (Contoh: diabetes, darah tinggi, kolesterol)"
+                        - "Apa matlamat pemakanan anda? (Contoh: turun berat badan, tambah jisim otot, kekal sihat)"
+
+                        2. **Kaji Keperluan Pemakanan:**
+                        - Kira keperluan kalori harian berdasarkan profil pengguna
+                        - Tentukan makronutrien (karbohidrat, protein, lemak) yang sesuai
+                        - Pertimbangkan keperluan mikronutrien (zat besi, kalsium, vitamin)
+
+                        3. **Tanya Preferensi Makanan:**
+                        - "Bahan utama apakah yang anda suka atau ada sekarang?"
+                        - "Adakah anda mengikuti diet khusus? (Contoh: halal, vegetarian, rendah gluten)"
+                        - "Berapa lama masa memasak yang anda ada?"
+
+                        4. **Cadangkan Resepi Berdasarkan:**
+                        - Kesesuaian dengan profil kesihatan pengguna
+                        - Keseimbangan nutrisi (gunakan Piramid Makanan Malaysia)
+                        - Kemudahan penyediaan dan bahan
+
+                        **Format Respons:**
+                        [PENILAIAN NUTRISI] 
+                        "Resepi ini sesuai kerana: 
+                        - Rendah karbohidrat (hanya 35g) sesuai untuk pesakit diabetes 
+                        - Tinggi protein (25g) membantu pembinaan otot 
+                        - Menggunakan minyak zaitun yang baik untuk jantung"
+
+                        [CADANGAN RESEPI UTAMA]
+                        "Nasi Ayam Kunyit dengan Salad Mangga:
+                        - Kalori: 420kcal
+                        - Masa: 30 minit
+                        - Bahan utama: dada ayam, kunyit, beras perang"
+
+                        [PILIHAN ALTERNATIF]
+                        1. Sup Sayur Campur (Vegetarian) - 280kcal
+                        2. Ikan Bakar Sambal - 350kcal
+
+                        [TIPS PEMAKANAN]
+                        "Untuk lebih seimbang, tambah 1 hidangan sayur hijau. Elakkan pengambilan garam berlebihan jika ada sejarah darah tinggi."
+
+                        **Contoh Interaksi:**
+                        Pengguna: "Saya nak makan siang yang cepat, ada ayam dan sayur dalam peti sejuk"
+                        AI: "Berdasarkan bahan anda, saya cadangkan:
+                        1. **Stir-fry Ayam Brokoli** (350kcal): 
+                        - Sediakan dalam 15 minit 
+                        - Tinggi protein & serat
+                        - Gunakan minyak canola untuk lemak sihat
+                        
+                        2. **Salad Ayam Thai** (300kcal):
+                        - Campurkan ayam rebus dengan salad, sos kacang
+                        - Rendah kalori tapi mengenyangkan
+                        
+                        Tip: Gunakan perahan limau sebagai pengganti sos untuk kurangkan kalori!"
+                        Pastikan jawapan dalam hanya BAHASA Melayu
+            '
+        ]
+    ];
+}
+
 // Tangani pengiriman pesan via AJAX
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     $action = $_POST['action'];
     
     if ($action === 'send_message' && isset($_POST['message'])) {
-        // Check if user has exceeded their usage limit
-        if ($hasExceededLimit) {
-            header('Content-Type: application/json');
-            echo json_encode([
-                'success' => false,
-                'error' => 'Anda telah mencapai had penggunaan percuma untuk hari ini. Sila naik taraf ke akaun premium untuk terus menggunakan perkhidmatan ini.'
-            ]);
-            exit;
-        }
-        
         $userMessage = trim($_POST['message']);
         
         if (!empty($userMessage)) {
-            // Build conversation for AI
-            $conversationForAI = [
-                [
-                    'role' => 'system',
-                    'content' => '...' // system message content
-                ]
-            ];
-            
-            // Add previous messages to context
-            foreach ($conversationHistory as $msg) {
-                $conversationForAI[] = ['role' => $msg['role'], 'content' => $msg['content']];
-            }
-            
-            // Add current user message
-            $conversationForAI[] = ['role' => 'user', 'content' => $userMessage];
+            // Simpan pesan pengguna ke sesi
+            $_SESSION['conversation'][] = ['role' => 'user', 'content' => $userMessage];
             
             // Kirim pesan ke AI
-            $response = chatWithAI($conversationForAI);
+            $response = chatWithAI($_SESSION['conversation']);
             
             // Dapatkan respons AI
             if (isset($response['choices'][0]['message']['content'])) {
                 $aiResponse = $response['choices'][0]['message']['content'];
                 
+                // Simpan respons AI ke sesi
+                $_SESSION['conversation'][] = ['role' => 'assistant', 'content' => $aiResponse];
+                
                 // EKSTRAK KATA KUNCI DARI PERCAKAPAN
-                $keywords = extractKeywords($conversationForAI);
+                $keywords = extractKeywords($_SESSION['conversation']);
                 
                 // Cari resepi berdasarkan kata kunci
                 $recipes = searchRecipesByKeywords($keywords);
                 
                 // Simpan ke database
                 try {
+                    // Buat chat baru jika belum ada
+                    if (!isset($_SESSION['id_chat'])) {
+                        $stmt = $connect->prepare("INSERT INTO chats (id_user, title_chat, created_date_chat, status_chat) 
+                                               VALUES (?, ?, NOW(), 'active')");
+                        $title = "Pencarian Resepi: " . substr($userMessage, 0, 50);
+                        $stmt->execute([1, $title]); // id_user sementara = 1
+                        $_SESSION['id_chat'] = $connect->lastInsertId();
+                    }
+                    
                     // Simpan pesan dan respons
                     $stmt = $connect->prepare("INSERT INTO responses (id_chat, text_user_response, text_ai_response, created_date_response, status_response) 
                                            VALUES (?, ?, ?, NOW(), 'active')");
                     $stmt->execute([$_SESSION['id_chat'], $userMessage, $aiResponse]);
-                    
-                    // Update usage count - increment by 1 for the new message
-                    $usageCount++;
-                    $hasExceededLimit = ($userStatus === 'free' && $usageCount >= $usageLimit);
                     
                 } catch (PDOException $e) {
                     // Tangani error
@@ -305,10 +275,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     'success' => true,
                     'aiResponse' => nl2br(htmlspecialchars($aiResponse)),
                     'keywords' => $keywords,
-                    'recipes' => $recipes,
-                    'usageCount' => $usageCount,
-                    'usageLimit' => $usageLimit,
-                    'hasExceededLimit' => $hasExceededLimit
+                    'recipes' => $recipes
                 ]);
                 exit;
             } else {
@@ -322,15 +289,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         }
     }
     elseif ($action === 'reset_chat') {
-        // Reset percakapan dengan membuat chat baru
-        try {
-            $stmt = $connect->prepare("INSERT INTO chats (id_user, title_chat, created_date_chat, status_chat) 
-                                       VALUES (?, 'Percakapan Baru', NOW(), 'active')");
-            $stmt->execute([$userId]);
-            $_SESSION['id_chat'] = $connect->lastInsertId();
-        } catch (PDOException $e) {
-            error_log("Error creating new chat: " . $e->getMessage());
-        }
+        // Reset percakapan
+        session_unset();
+        session_destroy();
+        session_start();
+        $_SESSION['conversation'] = [
+            [
+                'role' => 'system',
+                'content' => 'Anda adalah asisten ahli gizi dan koki profesional. Bantu pengguna menemukan resepi makanan sehat berdasarkan preferensi, bahan yang tersedia, kebutuhan diet, dan waktu memasak. Berikan saran yang praktis dan sehat dalam bahasa Melayu.'
+            ]
+        ];
         
         // Return response reset
         header('Content-Type: application/json');
@@ -341,6 +309,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         exit;
     }
 }
+
+// Ambil riwayat percakapan untuk ditampilkan
+$conversation = isset($_SESSION['conversation']) ? array_slice($_SESSION['conversation'], 1) : []; // Lewati pesan sistem
 ?>
 
 <?php $location_index = ".."; include('../components/head.php');?>
@@ -367,24 +338,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                                     <div class="lg:col-span-2 bg-white rounded-xl shadow-lg p-6">
                                         
                                         <div class="bg-gray-100 rounded-xl p-4 mb-6">
-                                            <!-- Usage Counter -->
-                                            <div class="usage-counter flex justify-between items-center mb-4 px-2">
-                                                <div class="text-sm text-gray-600">
-                                                    <?php if ($userStatus === 'free'): ?>
-                                                        <span id="usage-text">Penggunaan: <?php echo $usageCount; ?>/<?php echo $usageLimit; ?></span>
-                                                    <?php else: ?>
-                                                        <span id="usage-text">Penggunaan: <?php echo $usageCount; ?> (Tidak Terhad - Premium)</span>
-                                                    <?php endif; ?>
-                                                </div>
-                                                <?php if ($hasExceededLimit): ?>
-                                                    <div class="text-sm text-red-600 font-medium">
-                                                        Had harian dicapai. <a href="../premium/upgrade.php" class="underline">Naik Taraf</a>
-                                                    </div>
-                                                <?php endif; ?>
-                                            </div>
-                                            
                                             <div class="chat-container overflow-y-auto scrollbar-hidden max-h-[500px] pr-2" id="chat-messages">
-                                                <?php if (empty($conversationHistory)): ?>
+                                                <?php if (empty($conversation)): ?>
                                                     <div class="text-center py-10">
                                                         <div class="inline-block bg-gray-200 rounded-full p-4 mb-4">
                                                             <i class="fas fa-robot text-4xl text-primary"></i>
@@ -407,15 +362,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                                                         </div>
                                                     </div>
                                                 <?php else: ?>
-                                                    <?php foreach ($conversationHistory as $msg): ?>
+                                                    <?php foreach ($conversation as $msg): ?>
                                                         <div class="mb-4">
                                                             <?php if ($msg['role'] === 'user'): ?>
                                                                 <div class="flex justify-end mb-2">
-                                                                    <div class="bg-primary-500 text-white px-4 py-3 rounded-xl rounded-br-none max-w-[80%]">
+                                                                    <div class="bg-primary-500 text-white px-4 py-3 chat-bubble-user max-w-[80%]">
                                                                         <?= nl2br(htmlspecialchars($msg['content'])) ?>
-                                                                        <div class="text-xs text-primary-200 mt-1 text-right">
-                                                                            <?= date('H:i', strtotime($msg['timestamp'])) ?>
-                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                             <?php else: ?>
@@ -423,11 +375,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                                                                     <div class="bg-gray-200 rounded-full p-2 mr-3">
                                                                         <i class="fas fa-robot text-primary text-xl"></i>
                                                                     </div>
-                                                                    <div class="bg-white px-4 py-3 rounded-xl rounded-bl-none max-w-[80%] shadow-sm">
+                                                                    <div class="bg-white px-4 py-3 chat-bubble-ai max-w-[80%] shadow-sm">
                                                                         <?= nl2br(htmlspecialchars($msg['content'])) ?>
-                                                                        <div class="text-xs text-gray-500 mt-1">
-                                                                            <?= date('H:i', strtotime($msg['timestamp'])) ?>
-                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                             <?php endif; ?>
@@ -439,10 +388,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                                             <form id="chat-form" class="mt-6">
                                                 <div class="flex">
                                                     <input type="text" id="user-message" name="message" placeholder="Ketik permintaan resepi anda..." 
-                                                           class="flex-grow px-4 py-3 rounded-l-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" 
-                                                           <?= $hasExceededLimit ? 'disabled' : '' ?> required>
-                                                    <button type="submit" id="send-button" class="bg-primary-500 hover:bg-secondary-500 text-white px-6 rounded-r-lg transition"
-                                                        <?= $hasExceededLimit ? 'disabled' : '' ?>>
+                                                           class="flex-grow px-4 py-3 rounded-l-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" required>
+                                                    <button type="submit" id="send-button" class="bg-primary-500 hover:bg-secondary-500 text-white px-6 rounded-r-lg transition">
                                                         <i class="fas fa-paper-plane"></i>
                                                     </button>
                                                 </div>
@@ -459,13 +406,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                                         <!-- Recipe Results -->
                                         <h2 class="text-xl font-bold text-gray-800 mb-6">Rekomendasi Resepi</h2>
                                         <div id="recipe-results" class="recipe-results">
-                                            <div class="text-center py-10">
-                                                <div class="inline-block bg-gray-100 rounded-full p-4 mb-4">
-                                                    <i class="fas fa-utensils text-3xl text-primary"></i>
+                                            <?php if (!empty($recipes)): ?>
+                                                <div class="space-y-6">
+                                                    <?php foreach ($recipes as $recipe): ?>
+                                                        <div class="recipe-card border border-gray-200 rounded-xl overflow-hidden hover:shadow-md">
+                                                            <div class="bg-gray-200 border-2 border-dashed rounded-xl w-full h-48 flex items-center justify-center text-gray-400">
+                                                                <i class="fas fa-image text-4xl"></i>
+                                                            </div>
+                                                            <div class="p-4">
+                                                                <div class="flex justify-between items-start">
+                                                                    <h3 class="font-bold text-lg text-gray-800"><?= htmlspecialchars($recipe['name_recipe']) ?></h3>
+                                                                    <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                                                                        <?= htmlspecialchars($recipe['calories_recipe']) ?> kkal
+                                                                    </span>
+                                                                </div>
+                                                                <p class="text-gray-600 text-sm mt-2"><?= htmlspecialchars(substr($recipe['desc_recipe'], 0, 100)) ?>...</p>
+                                                                
+                                                                <div class="flex justify-between mt-4 text-sm">
+                                                                    <div>
+                                                                        <i class="fas fa-clock text-gray-500 mr-1"></i>
+                                                                        <span><?= htmlspecialchars($recipe['cooking_time_recipe']) ?> minit</span>
+                                                                    </div>
+                                                                    <div>
+                                                                        <i class="fas fa-heart text-red-500 mr-1"></i>
+                                                                        <span><?= htmlspecialchars($recipe['num_likes_recipe']) ?> suka</span>
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                <div class="mt-4">
+                                                                    <button class="w-full bg-primary hover:bg-secondary text-white py-2 rounded-lg transition flex items-center justify-center">
+                                                                        <i class="fas fa-book-open mr-2"></i> Lihat Resepi Lengkap
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    <?php endforeach; ?>
                                                 </div>
-                                                <h3 class="text-lg font-bold text-gray-700">Rekomendasi Resepi</h3>
-                                                <p class="text-gray-600 mt-2">Resepi yang disyorkan akan muncul di sini</p>
-                                            </div>
+                                            <?php else: ?>
+                                                <div class="text-center py-10">
+                                                    <div class="inline-block bg-gray-100 rounded-full p-4 mb-4">
+                                                        <i class="fas fa-utensils text-3xl text-primary"></i>
+                                                    </div>
+                                                    <h3 class="text-lg font-bold text-gray-700">Rekomendasi Resepi</h3>
+                                                    <p class="text-gray-600 mt-2">Resepi yang disyorkan akan muncul di sini</p>
+                                                </div>
+                                            <?php endif; ?>
                                         </div>
                                     </div>
                                 </div>
@@ -495,7 +480,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                             <div class="bg-gray-200 rounded-full p-2 mr-3">
                                 <i class="fas fa-robot text-primary text-xl"></i>
                             </div>
-                            <div class="bg-white px-4 py-3 rounded-xl rounded-bl-none max-w-[80%] shadow-sm">
+                            <div class="bg-white px-4 py-3 chat-bubble-ai max-w-[80%] shadow-sm">
                                 <div class="loading-dots">
                                     <span></span>
                                     <span></span>
@@ -508,15 +493,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 
                 // Fungsi untuk menampilkan pesan pengguna
                 function appendUserMessage(message) {
-                    const now = new Date();
-                    const timeString = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
-                    
                     const messageHtml = `
                         <div class="mb-4">
                             <div class="flex justify-end mb-2">
-                                <div class="bg-primary-500 text-white px-4 py-3 rounded-xl rounded-br-none max-w-[80%]">
+                                <div class="bg-primary-500 text-white px-4 py-3 chat-bubble-user max-w-[80%]">
                                     ${message}
-                                    <div class="text-xs text-primary-200 mt-1 text-right">${timeString}</div>
                                 </div>
                             </div>
                         </div>
@@ -527,18 +508,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 
                 // Fungsi untuk menampilkan pesan AI
                 function appendAiMessage(message) {
-                    const now = new Date();
-                    const timeString = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
-                    
                     const messageHtml = `
                         <div class="mb-4">
                             <div class="flex items-start mb-2">
                                 <div class="bg-gray-200 rounded-full p-2 mr-3">
                                     <i class="fas fa-robot text-primary text-xl"></i>
                                 </div>
-                                <div class="bg-white px-4 py-3 rounded-xl rounded-bl-none max-w-[80%] shadow-sm">
+                                <div class="bg-white px-4 py-3 chat-bubble-ai max-w-[80%] shadow-sm">
                                     ${message}
-                                    <div class="text-xs text-gray-500 mt-1">${timeString}</div>
                                 </div>
                             </div>
                         </div>
@@ -677,21 +654,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                                 
                                 // Tampilkan resepi
                                 updateRecipes(response.recipes);
-                                
-                                // Update usage counter
-                                if (response.hasExceededLimit) {
-                                    $('#usage-text').html('Penggunaan: ' + response.usageCount + '/' + response.usageLimit);
-                                    $('#user-message').prop('disabled', true);
-                                    $('#send-button').prop('disabled', true);
-                                    $('#chat-form').after(
-                                        '<div class="mt-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">' +
-                                        'Anda telah mencapai had penggunaan percuma untuk hari ini. ' +
-                                        '<a href="../premium/upgrade.php" class="font-medium underline">Naik taraf ke premium</a> untuk terus menggunakan.' +
-                                        '</div>'
-                                    );
-                                } else {
-                                    $('#usage-text').text('Penggunaan: ' + response.usageCount + '/' + response.usageLimit);
-                                }
                             } else {
                                 appendAiMessage(response.error);
                             }
@@ -716,8 +678,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                         dataType: 'json',
                         success: function(response) {
                             if (response.success) {
-                                // Reload the page to show empty chat
-                                location.reload();
+                                // Reset tampilan chat
+                                $('#chat-messages').html(`
+                                    <div class="text-center py-10">
+                                        <div class="inline-block bg-gray-200 rounded-full p-4 mb-4">
+                                            <i class="fas fa-robot text-4xl text-primary"></i>
+                                        </div>
+                                        <h3 class="text-xl font-bold text-gray-700">Hai, saya Asisten Resepi Sehat AI</h3>
+                                        <p class="text-gray-600 mt-2">Sila sampaikan keperluan resepi anda. Contoh:</p>
+                                        <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            <div class="bg-white rounded-lg p-3 text-sm shadow">
+                                                "Resepi sarapan tinggi protein"
+                                            </div>
+                                            <div class="bg-white rounded-lg p-3 text-sm shadow">
+                                                "Makan tengah hari rendah kalori dengan ayam"
+                                            </div>
+                                            <div class="bg-white rounded-lg p-3 text-sm shadow">
+                                                "Resepi vegetarian untuk pemula"
+                                            </div>
+                                            <div class="bg-white rounded-lg p-3 text-sm shadow">
+                                                "Makanan penutup sihat tanpa gula"
+                                            </div>
+                                        </div>
+                                    </div>
+                                `);
+                                
+                                // Reset kata kunci dan resepi
+                                $('#keywords-section').html('');
+                                $('#recipe-results').html(`
+                                    <div class="text-center py-10">
+                                        <div class="inline-block bg-gray-100 rounded-full p-4 mb-4">
+                                            <i class="fas fa-utensils text-3xl text-primary"></i>
+                                        </div>
+                                        <h3 class="text-lg font-bold text-gray-700">Rekomendasi Resepi</h3>
+                                        <p class="text-gray-600 mt-2">Resepi yang disyorkan akan muncul di sini</p>
+                                    </div>
+                                `);
                             }
                         }
                     });
