@@ -37,7 +37,7 @@
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <?php 
 
-                                    $resepi_terkini_sql = $connect->prepare("SELECT * FROM recipes WHERE id_user = :id_user ORDER BY created_date_recipe LIMIT 3");
+                                    $resepi_terkini_sql = $connect->prepare("SELECT * FROM recipes WHERE id_user = :id_user AND status_recipe = 1 ORDER BY created_date_recipe LIMIT 3");
                                     $resepi_terkini_sql->execute([
                                         ":id_user" => $user['id_user']
                                     ]);

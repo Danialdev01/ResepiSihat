@@ -137,3 +137,22 @@
     <link rel="manifest" href="<?php echo $location_index?>/manifest.json">
 
 </head>
+
+<?php 
+
+    function formatImagePath($input, $locationRef) {
+        // Check if the string is already a full URL (starts with http:// or https://)
+        if (preg_match('/^https?:\/\//i', $input)) {
+            return $input;
+        }
+        
+        // Check if the string is already a relative path with directories
+        if (strpos($input, '/') !== false) {
+            return $input;
+        }
+        
+        // If it's just a filename, add the location reference and appropriate path
+        return rtrim($locationRef, '/') . '/uploads/recipes/' . ltrim($input, '/');
+    }
+
+?>

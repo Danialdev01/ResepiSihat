@@ -197,10 +197,10 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8" id="recipeGrid">
                             <?php if (count($recipes) > 0): ?>
                                 <?php foreach($recipes as $recipe): ?>
-                                    <a href="./resepi/?id=<?php echo $recipe['id_recipe'] ?>">
+                                    <!-- <a href="./resepi/?id=<?php echo $recipe['id_recipe'] ?>"> -->
                                         <div data-modal-target="resepi-modal-<?php echo $recipe['id_recipe']?>" data-modal-toggle="resepi-modal-<?php echo $recipe['id_recipe']?>" class="meal-card bg-gray-50 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300">
                                             <div class="h-32 relative">
-                                                <img src="<?php echo htmlspecialchars($recipe['image_recipe'] ?? '')?>" 
+                                                <img src="<?php echo htmlspecialchars(formatImagePath($resepi_terkini['image_recipe'], "../../"))?>" 
                                                     alt="<?php echo htmlspecialchars($recipe['name_recipe'] ?? '')?>" 
                                                     class="w-full h-full object-cover">
                                                 <div class="absolute top-2 right-2">
@@ -220,7 +220,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                    </a>
+                                    <!-- </a> -->
                                 <?php endforeach; ?>
                             <?php endif; ?>
                         </div>

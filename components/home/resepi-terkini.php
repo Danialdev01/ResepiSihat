@@ -7,7 +7,7 @@ $recipesPerPage = 9;  // Changed to 9 to match grid layout
 $offset = ($page - 1) * $recipesPerPage;
 
 // Prepare base SQL queries
-$baseSql = "SELECT * FROM recipes WHERE 1=1";
+$baseSql = "SELECT * FROM recipes WHERE 1=1 AND status_recipe = 1";
 $countSql = "SELECT COUNT(*) AS total_recipes FROM recipes WHERE 1=1";
 
 // Initialize parameters array
@@ -162,7 +162,7 @@ if ($totalRecipes > 0) {
                         <div class="recipe-card rounded border border-gray-200">
                             <div class="image-container">
                                 <div class="h-48 overflow-hidden">
-                                    <img src="<?php echo htmlspecialchars($recipe['image_recipe'] ?? ''); ?>" 
+                                    <img src="<?php echo htmlspecialchars(formatImagePath($recipe['image_recipe'], "../../"))?>" 
                                             alt="<?php echo htmlspecialchars($recipe['name_recipe'] ?? ''); ?>" 
                                             class="w-full h-full object-cover">
                                 </div>

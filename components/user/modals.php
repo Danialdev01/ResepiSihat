@@ -77,8 +77,8 @@
                     <div class="p-4 md:p-5">
                         <div class="relative w-full rounded-xl overflow-hidden shadow-lg">
                             <img 
-                                src="<?php echo htmlspecialchars($resepi_terkini['image_recipe']) ?>" 
-                                alt="Nasi Goreng Cina"
+                                src="<?php echo htmlspecialchars(formatImagePath($resepi_terkini['image_recipe'], "../../"))?>" 
+                                alt="<?php echo htmlspecialchars($resepi_terkini['name_recipe']) ?>"
                                 class="w-full h-[350px] object-cover"
                             />
                             <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>

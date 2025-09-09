@@ -21,7 +21,7 @@
 
             // Prepare base SQL queries
             $id_user = $user['id_user'];
-            $baseSql = "SELECT * FROM recipes WHERE 1=1 AND id_user = $id_user";
+            $baseSql = "SELECT * FROM recipes WHERE 1=1 AND id_user = $id_user AND status_recipe = 1";
             $countSql = "SELECT COUNT(*) AS total_recipes FROM recipes WHERE 1=1 AND id_user = $id_user";
 
             // Initialize parameters array
@@ -182,7 +182,7 @@
                                 <?php foreach($recipes as $recipe): ?>
                                     <div data-modal-target="resepi-modal-<?php echo $recipe['id_recipe']?>" data-modal-toggle="resepi-modal-<?php echo $recipe['id_recipe']?>" class="meal-card bg-gray-50 rounded-lg overflow-hidden">
                                         <div class="h-32 relative">
-                                            <img src="<?php echo htmlspecialchars($recipe['image_recipe'] ?? '')?>" 
+                                            <img src="<?php echo htmlspecialchars(formatImagePath($recipe['image_recipe'], "../../"))?>" 
                                                 alt="<?php echo htmlspecialchars($recipe['name_recipe'] ?? '')?>" 
                                                 class="w-full h-full object-cover">
                                             <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-3">

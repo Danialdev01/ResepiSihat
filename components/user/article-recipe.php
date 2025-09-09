@@ -40,16 +40,6 @@
             <?php echo htmlspecialchars($recipe['desc_recipe']) ?>
         </p>
 
-        <?php 
-            $user_recipe_sql = $connect->prepare("SELECT pfp_user, name_user, created_date_user FROM users WHERE id_user = :id_user");
-            $user_recipe_sql->execute([
-                ":id_user" => $recipe['id_user']
-            ]);
-            $user_recipe = $user_recipe_sql->fetch(PDO::FETCH_ASSOC);
-
-            $created_date_user = date_create($user_recipe['created_date_user'])
-        ?>
-
         <!-- Recipe Meta -->
         <div class="flex flex-wrap items-center gap-6 text-gray-500 mb-6">
             <div class="flex items-center gap-1">
@@ -69,13 +59,29 @@
         <!-- Action Buttons -->
         <div class="md:flex md:flex-wrap lg:gap-3 gap-2">
 
-            <div class="flex items-center gap-4">
-                <img class="w-10 h-10 rounded-full" src="<?php echo !empty($user_recipe['pfp_user']) ? $location_index .'/uploads/profiles/'.$user_recipe['pfp_user'] : 'https://avatar.iran.liara.run/username?username=' . $user_recipe['name_user'] ; ?>" alt="Profile Picture">
-                <div class="font-medium">
-                    <div><?php echo htmlspecialchars($user_recipe['name_user'])?></div>
-                    <div class="text-sm text-gray-500">Joined in <?php echo date_format($created_date_user ,"M Y")?></div>
-                </div>
-            </div>
+            <?php
+
+                $user_recipe_sql = $connect->prepare("SELECT pfp_user, name_user, created_date_user, id_user FROM users WHERE id_user = :id_user");
+                $user_recipe_sql->execute([
+                    ":id_user" => $recipe['id_user']
+                ]);
+                $user_recipe = $user_recipe_sql->fetch(PDO::FETCH_ASSOC);
+
+                $created_date_user = date_create($user_recipe['created_date_user']);
+                
+                if($user['id_user'] != $user_recipe['id_user']){
+                    ?>
+                    <div class="flex items-center gap-4">
+                        <img class="w-10 h-10 rounded-full" src="<?php echo !empty($user_recipe['pfp_user']) ? $location_index .'/uploads/profiles/'.$user_recipe['pfp_user'] : 'https://avatar.iran.liara.run/username?username=' . $user_recipe['name_user'] ; ?>" alt="Profile Picture">
+                        <div class="font-medium">
+                            <div><?php echo htmlspecialchars($user_recipe['name_user'])?></div>
+                            <div class="text-sm text-gray-500">Joined in <?php echo date_format($created_date_user ,"M Y")?></div>
+                        </div>
+                    </div>
+                    <?php
+                }
+
+            ?>
             <br>
 
                 <div class="flex flex-wrap lg:gap-3 gap-2">
@@ -94,10 +100,12 @@
                             if($likes_sql->rowCount() > 0){
                                 $user_has_liked = true;
                                 $status = "dislike";
+                                $icon = "fa";
                             }
                             else{
                                 
                                 $status = "like";
+                                $icon = "far";
                             }
         
                         ?>
@@ -110,7 +118,7 @@
                             name="like_recipe"
                             class="inline-flex items-center px-4 py-2 border rounded-md shadow-sm text-sm font-medium <?php echo $user_has_liked ? 'bg-red-50 text-red-600 border-red-200' : 'bg-white text-gray-700 border-gray-300 hover:bg-red-50 hover:text-red-600 hover:border-red-200'; ?>"
                         >
-                            <i class="far fa-heart mr-2"></i>
+                            <i class="<?php echo $icon?> fa-heart mr-2"></i>
                             Suka (<?php echo $recipe['num_likes_recipe']?>)
                         </button>
                     </form>
@@ -129,10 +137,11 @@
                             if($bookmarks_sql->rowCount() > 0){
                                 $user_has_bookmarked = true;
                                 $status = "disbookmark";
+                                $icon = "fa";
                             }
                             else{
-                                
                                 $status = "bookmark";
+                                $icon = "far";
                             }
         
                         ?>
@@ -145,7 +154,7 @@
                             name="bookmark_recipe"
                             class="inline-flex items-center px-4 py-2 border rounded-md shadow-sm text-sm font-medium <?php echo $user_has_bookmarked ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200'; ?>"
                         >
-                            <i class="far fa-bookmark mr-2"></i>
+                            <i class="<?php echo $icon?> fa-bookmark mr-2"></i>
                             Simpan Resipi
                         </button>
                     </form>
@@ -164,6 +173,29 @@
                         <i class="fa fa-print mr-2"></i>
                         Cetak
                     </button>
+
+                    <?php 
+
+                        if($user['id_user'] == $user_recipe['id_user']){
+                            ?>
+                            <button class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-white bg-primary-600">
+                                <i class="fa fa-pencil mr-2"></i>
+                                Kemaskini
+                            </button>
+
+                            <form action="<?php echo $location_index?>/backend/recipe.php" method="post">
+                                <input type="hidden" name="token" value="<?php echo $token?>">
+                                <input type="hidden" name="id_recipe" value="<?php echo $recipe['id_recipe']?>">
+
+                                <button type="submit" name="delete_recipe" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-white bg-red-600">
+                                    <i class="fa fa-trash mr-2"></i>
+                                    Hapuskan
+                                </button>
+                            </form>
+                            <?php
+                        }
+
+                    ?>
                 </div>
             
         </div>
@@ -177,35 +209,38 @@
                 <h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-primary-600">
                     Bahan-bahan
                 </h2>
+
+
                 <div class="space-y-3">
-                    <div class="flex items-start gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                        <div class="w-2 h-2 rounded-full bg-primary-600 mt-2 shrink-0"></div>
-                        <span class="text-sm leading-relaxed">2 cawan nasi putih</span>
-                    </div>
-                    <div class="flex items-start gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                        <div class="w-2 h-2 rounded-full bg-primary-600 mt-2 shrink-0"></div>
-                        <span class="text-sm leading-relaxed">2 biji telur</span>
-                    </div>
-                    <div class="flex items-start gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                        <div class="w-2 h-2 rounded-full bg-primary-600 mt-2 shrink-0"></div>
-                        <span class="text-sm leading-relaxed">1 cawan ikan bilis goreng</span>
-                    </div>
-                    <div class="flex items-start gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                        <div class="w-2 h-2 rounded-full bg-primary-600 mt-2 shrink-0"></div>
-                        <span class="text-sm leading-relaxed">3 ulas bawang putih</span>
-                    </div>
-                    <div class="flex items-start gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                        <div class="w-2 h-2 rounded-full bg-primary-600 mt-2 shrink-0"></div>
-                        <span class="text-sm leading-relaxed">2 sudu besar kicap</span>
-                    </div>
-                    <div class="flex items-start gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                        <div class="w-2 h-2 rounded-full bg-primary-600 mt-2 shrink-0"></div>
-                        <span class="text-sm leading-relaxed">1 sudu kecil garam</span>
-                    </div>
-                    <div class="flex items-start gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                        <div class="w-2 h-2 rounded-full bg-primary-600 mt-2 shrink-0"></div>
-                        <span class="text-sm leading-relaxed">2 sudu besar minyak masak</span>
-                    </div>
+                    <?php
+
+                        // Decode the JSON string into PHP array
+                        $ingredientData = $recipe['ingredient_recipe'];
+
+                        // First, decode HTML entities to convert &quot; back to regular quotes
+                        $decodedData = html_entity_decode($ingredientData, ENT_QUOTES, 'UTF-8');
+
+                        $ingredients = json_decode($decodedData, true);
+
+                        if ($ingredients && is_array($ingredients)) {
+                            
+                            foreach ($ingredients as $ingredient) {
+                                echo '<div class="flex items-start gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">';
+                                echo '<div class="w-2 h-2 rounded-full bg-primary-600 mt-2 shrink-0"></div>';
+                                echo '<span class="text-sm leading-relaxed">'. htmlspecialchars($ingredient['quantity']) .' '. htmlspecialchars($ingredient['name']) .'</span>';
+                                echo '</div>';
+                            }
+                            
+                        } 
+                        else {
+                            echo "<p>Tidak ada bahan-bahan yang ditemukan.</p>";
+                            // Debug: check for JSON errors
+                            if (json_last_error() !== JSON_ERROR_NONE) {
+                                echo "<p>Error: " . json_last_error_msg() . "</p>";
+                            }
+                        }
+
+                    ?>
                 </div>
 
                 <!-- <hr class="my-6 border-gray-200"> -->
@@ -244,8 +279,8 @@
             <div class="mb-8">
                 <div class="relative rounded-2xl overflow-hidden shadow-lg">
                     <img 
-                        src="<?php echo htmlspecialchars($recipe['image_recipe']) ?>" 
-                        alt="Nasi Goreng Cina"
+                        src="<?php echo htmlspecialchars(formatImagePath($recipe['image_recipe'], "../../"))?>" 
+                        alt="<?php echo htmlspecialchars($recipe['name_recipe'])?>"
                         class="w-full h-[350px] object-cover"
                     />
                     <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
@@ -272,16 +307,16 @@
 
             <!-- Video -->
             <div class="bg-gradient-to-r from-orange-500 to-orange-700 rounded-xl shadow-md p-6 text-center mb-8">
-                <div class="aspect-w-12 aspect-h-9">
-                    <iframe src="<?php echo htmlspecialchars($recipe['url_resource_recipe']); ?>" 
-                            class="w-full h-64 rounded-lg" frameborder="0" 
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                            allowfullscreen>
+                <div class="w-full h-[350px] object-cover">
+                    <iframe 
+                        src="<?php echo htmlspecialchars($recipe['url_resource_recipe'])?>" 
+                        allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" 
+                        class="w-full h-[350px] object-cover"
+                        allowfullscreen>
                     </iframe>
                 </div>
             </div>
 
-            
             
             <!-- Comments Section -->
             <div class="bg-white rounded-xl shadow-md p-6">
