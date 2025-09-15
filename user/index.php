@@ -45,9 +45,10 @@
                                     while($resepi_terkini = $resepi_terkini_sql->fetch(PDO::FETCH_ASSOC)){
                                         ?>
 
-                                        <div data-modal-target="resepi-modal-<?php echo $resepi_terkini['id_recipe']?>" data-modal-toggle="resepi-modal-<?php echo $resepi_terkini['id_recipe']?>" class="meal-card bg-gray-50 rounded-lg overflow-hidden">
+                                        <a href="./resepi/?id=<?php echo $resepi_terkini['id_recipe']?>" class="meal-card bg-gray-50 rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow duration-300">
+
                                             <div class="h-32 relative">
-                                                <img src="<?php echo htmlspecialchars($resepi_terkini['image_recipe'] ?? '')?>" 
+                                                <img src="<?php echo htmlspecialchars(formatImagePath($resepi_terkini['image_recipe'], "../"))?>" 
                                                     alt="<?php echo htmlspecialchars($resepi_terkini['name_recipe'] ?? '')?>" 
                                                     class="w-full h-full object-cover">
                                                 <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-3">
@@ -61,7 +62,9 @@
                                                     <span><i class="fas fa-fire mr-1"></i><?php echo htmlspecialchars($resepi_terkini['calories_recipe'] ?? '')?></span>
                                                 </div>
                                             </div>
-                                        </div>
+                                        </a>
+                                        <!-- <div data-modal-target="resepi-modal-<?php echo $resepi_terkini['id_recipe']?>" data-modal-toggle="resepi-modal-<?php echo $resepi_terkini['id_recipe']?>" class="meal-card bg-gray-50 rounded-lg overflow-hidden"> -->
+                                        <!-- </div> -->
                                         
                                         <?php
                                     }

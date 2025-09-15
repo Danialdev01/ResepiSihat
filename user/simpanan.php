@@ -197,10 +197,10 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8" id="recipeGrid">
                             <?php if (count($recipes) > 0): ?>
                                 <?php foreach($recipes as $recipe): ?>
-                                    <!-- <a href="./resepi/?id=<?php echo $recipe['id_recipe'] ?>"> -->
-                                        <div data-modal-target="resepi-modal-<?php echo $recipe['id_recipe']?>" data-modal-toggle="resepi-modal-<?php echo $recipe['id_recipe']?>" class="meal-card bg-gray-50 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300">
+                                    <a href="./resepi/?id=<?php echo $recipe['id_recipe'] ?>">
+                                        <!-- <div data-modal-target="resepi-modal-<?php echo $recipe['id_recipe']?>" data-modal-toggle="resepi-modal-<?php echo $recipe['id_recipe']?>" class="meal-card bg-gray-50 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300"> -->
                                             <div class="h-32 relative">
-                                                <img src="<?php echo htmlspecialchars(formatImagePath($resepi_terkini['image_recipe'], "../../"))?>" 
+                                                <img src="<?php echo htmlspecialchars(formatImagePath($recipe['image_recipe'], "../"))?>" 
                                                     alt="<?php echo htmlspecialchars($recipe['name_recipe'] ?? '')?>" 
                                                     class="w-full h-full object-cover">
                                                 <div class="absolute top-2 right-2">
@@ -219,8 +219,8 @@
                                                     <span><i class="fas fa-fire mr-1"></i><?php echo htmlspecialchars($recipe['calories_recipe'] ?? '')?> kalori</span>
                                                 </div>
                                             </div>
-                                        </div>
-                                    <!-- </a> -->
+                                        <!-- </div> -->
+                                    </a>
                                 <?php endforeach; ?>
                             <?php endif; ?>
                         </div>

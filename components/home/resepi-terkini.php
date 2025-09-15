@@ -162,7 +162,7 @@ if ($totalRecipes > 0) {
                         <div class="recipe-card rounded border border-gray-200">
                             <div class="image-container">
                                 <div class="h-48 overflow-hidden">
-                                    <img src="<?php echo htmlspecialchars(formatImagePath($recipe['image_recipe'], "../../"))?>" 
+                                    <img src="<?php echo htmlspecialchars(formatImagePath($recipe['image_recipe'], $location_index ."/"))?>" 
                                             alt="<?php echo htmlspecialchars($recipe['name_recipe'] ?? ''); ?>" 
                                             class="w-full h-full object-cover">
                                 </div>

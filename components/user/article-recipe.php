@@ -460,7 +460,7 @@
                 <a href="./?id=<?php echo $recommended_recipe['id_recipe']?>">
 
                     <div class="bg-white rounded-xl shadow-md overflow-hidden">
-                        <img src="<?php echo htmlspecialchars($recommended_recipe['image_recipe'])?>" alt="Resipi 1" class="w-full h-48 object-cover">
+                        <img src="<?php echo htmlspecialchars(formatImagePath($recommended_recipe['image_recipe'], "../../"))?>" alt="Resipi 1" class="w-full h-48 object-cover">
                         <div class="p-4">
                             <h3 class="font-bold text-lg mb-2"><?php echo htmlspecialchars($recommended_recipe['name_recipe']) ?></h3>
                             <p class="text-gray-600 text-sm mb-4"><?php echo htmlspecialchars($recommended_recipe['desc_recipe']) ?></p>
