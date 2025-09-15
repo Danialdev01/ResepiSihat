@@ -16,9 +16,9 @@
     <link rel="shortcut icon" href="<?php echo $location_index?>/src/assets/images/logo/favicon/favicon.ico" type="image/x-icon">
 
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
 
-    <script>
+    <!-- <script>
         tailwind.config = {
             theme: {
                 extend: {
@@ -39,7 +39,7 @@
                 }
             }
         }
-    </script>
+    </script> -->
     <!-- for chart -->
     <!-- <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script> -->
     <!-- <script src="https://cdn.jsdelivr.net/npm/apexcharts@latest/dist/apexcharts.min.js"></script> -->
